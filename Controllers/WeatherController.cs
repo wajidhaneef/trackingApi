@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using trackingApi.Data;
 using trackingApi.Dtos;
 using trackingApi.GenericRepository;
@@ -161,7 +161,7 @@ namespace trackingApi.Controllers
                 {
                     return NotFound();
                 }
-                var jsonObject = JObject.Parse(response);
+                var jsonObject = JsonObject.Parse(response);
                 Weather weather1 = new()
                 {
                     City = city,
@@ -179,7 +179,7 @@ namespace trackingApi.Controllers
                 return Ok(JsonConvert.SerializeObject(weather1Dto));
             }
             var weatherDto = _mapper.Map<IEnumerable<WeatherDto>>(weather);
-            return Ok(JsonConvert.SerializeObject(weatherDto));
+            return Ok((weatherDto));
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Azure.Core.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using trackingApi.Data;
 using trackingApi.Dtos;
 using trackingApi.GenericRepository;
@@ -188,7 +190,7 @@ namespace trackingApi.Controllers
                 }
                 var openAPiService = new OpenAPiService();
                 var response = await openAPiService.GetOpenNews(title);
-                var jsonObject = JObject.Parse(response);
+                var jsonObject = JsonObject.Parse(response);
                 if (response == null)
                 {
                     return NotFound();
@@ -198,7 +200,7 @@ namespace trackingApi.Controllers
                     Title = title,
                     //Use "results" for https://newsdata.io/api/1/news?apikey=pub_2241410d88c2afec96b134fececf4df9a330f&q=
                     // Use "articles" for https://newsapi.org/v2/everything?q=
-                    Articles = JsonConvert.SerializeObject(jsonObject["results"]),
+                    Articles = JsonSerializer.Serialize(jsonObject["results"]),
                     NumOfArticles = (int)jsonObject["totalResults"]
                 };
 
@@ -208,11 +210,11 @@ namespace trackingApi.Controllers
                 await _unitOfWork.SaveChangesAsync();
                 _unitOfWork.Commit();
                 var newsTempDto = _mapper.Map<NewsDto>(newsTemp);
-                return Ok(JsonConvert.SerializeObject(newsTempDto));
+                return Ok(JsonSerializer.Serialize(newsTempDto));
             }
             //var newsDtoList = _mapper.Map<IEnumerable<NewsDto>>(newsList);
             var newsDto = _mapper.Map<IEnumerable<NewsDto>>(newss);
-            return Ok(JsonConvert.SerializeObject(newsDto));
+            return Ok(JsonSerializer.Serialize(newsDto));
         }
     }
 }

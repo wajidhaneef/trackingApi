@@ -11,7 +11,6 @@ using trackingApi.UnitOfWork;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using trackingApi.OpenAPiService1;
-using Newtonsoft.Json.Linq;
 using System.Net.NetworkInformation;
 using static System.Net.WebRequestMethods;
 using System.Runtime.InteropServices;
@@ -19,6 +18,8 @@ using trackingApi.Resources.Commands.Create;
 using MediatR;
 using Azure.Core;
 using trackingApi.Resources.Commands.Delete;
+using trackingApi.Resources.Commands.Update;
+using System.Text.Json.Nodes;
 
 namespace trackingApi.Controllers
 {
@@ -131,38 +132,45 @@ namespace trackingApi.Controllers
         {
             _logger.LogInformation($"Updating currency with ID {id}...");
 
-            if (currencyDto == null)
-            {
-                _logger.LogWarning("Invalid currency data provided.");
-                return BadRequest();
-            }
+            //if (currencyDto == null)
+            //{
+            //    _logger.LogWarning("Invalid currency data provided.");
+            //    return BadRequest();
+            //}
 
-            try
-            {
-                var currencyRepository = _unitOfWork.GetRepository<Currency>();
-                var existingCurrency = await currencyRepository.GetById(id);
-                if (existingCurrency == null)
-                {
-                    _logger.LogWarning($"Currency with ID {id} not found.");
-                    return NotFound();
-                }
+            //try
+            //{
+            //    var currencyRepository = _unitOfWork.GetRepository<Currency>();
+            //    var existingCurrency = await currencyRepository.GetById(id);
+            //    if (existingCurrency == null)
+            //    {
+            //        _logger.LogWarning($"Currency with ID {id} not found.");
+            //        return NotFound();
+            //    }
 
-                _mapper.Map(currencyDto, existingCurrency);
-                _unitOfWork.CreateTransaction();
-                await currencyRepository.Update(existingCurrency);
-                await _unitOfWork.SaveChangesAsync();
-                _unitOfWork.Commit();
-                _logger.LogInformation($"Currency with ID {id} updated successfully.");
+            //    _mapper.Map(currencyDto, existingCurrency);
+            //    _unitOfWork.CreateTransaction();
+            //    await currencyRepository.Update(existingCurrency);
+            //    await _unitOfWork.SaveChangesAsync();
+            //    _unitOfWork.Commit();
+            //    _logger.LogInformation($"Currency with ID {id} updated successfully.");
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex.Message);
-                _unitOfWork.Rollback();
-                return BadRequest(ex.Message);
-            }
-            
+            //    return NoContent();
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning(ex.Message);
+            //    _unitOfWork.Rollback();
+            //    return BadRequest(ex.Message);
+            //}
+
+            var command = new UpdateCurrencyCommand() {Id = id, 
+                ConversionRate = currencyDto.ConversionRate,
+                CurrencyCodeFrom=currencyDto.CurrencyCodeFrom,
+                CurrencyCodeTo=currencyDto.CurrencyCodeTo,
+            };
+            var response = _mediator.Send(command);
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
@@ -284,7 +292,7 @@ namespace trackingApi.Controllers
                         "old_amount": 4.0
                      */
                     var response = await openApiService.GetOpenCurrency(to, from, amount.ToString());
-                    var jsonObject = JObject.Parse(response);
+                    var jsonObject = JsonObject.Parse(response);
                     decimal conversionRate = (decimal)jsonObject["new_amount"] / (decimal)jsonObject["old_amount"];
                     
                     Currency currency = new Currency();
