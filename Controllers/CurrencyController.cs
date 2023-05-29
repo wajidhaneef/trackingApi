@@ -18,6 +18,7 @@ using System.Runtime.InteropServices;
 using trackingApi.Resources.Commands.Create;
 using MediatR;
 using Azure.Core;
+using trackingApi.Resources.Commands.Delete;
 
 namespace trackingApi.Controllers
 {
@@ -121,7 +122,6 @@ namespace trackingApi.Controllers
             {
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPut("{id}")]
@@ -170,30 +170,41 @@ namespace trackingApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(int id)
         {
+            //try
+            //{
+            //    _logger.LogInformation($"Deleting currency with ID {id}...");
+
+            //    var currencyRepository = _unitOfWork.GetRepository<Currency>();
+            //    var deleted = await currencyRepository.Delete(id);
+            //    if (!deleted)
+            //    {
+            //        _logger.LogWarning($"Currency with ID {id} not found.");
+            //        return NotFound();
+            //    }
+
+            //    await _unitOfWork.SaveChangesAsync();
+
+            //    _logger.LogInformation($"Currency with ID {id} deleted successfully.");
+
+            //    return NoContent();
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning(ex.Message);
+            //    _unitOfWork.Rollback();
+            //    return NotFound(ex.Message);
+            //}
             try
             {
-                _logger.LogInformation($"Deleting currency with ID {id}...");
-
-                var currencyRepository = _unitOfWork.GetRepository<Currency>();
-                var deleted = await currencyRepository.Delete(id);
-                if (!deleted)
-                {
-                    _logger.LogWarning($"Currency with ID {id} not found.");
-                    return NotFound();
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation($"Currency with ID {id} deleted successfully.");
-
-                return NoContent();
+                var command = new DeleteCurrencyCommand() { Id = id };
+                var response = await _mediator.Send(command);
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex.Message);
-                _unitOfWork.Rollback();
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
+
         }
 
         // Non Generic Repository method

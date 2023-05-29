@@ -7,11 +7,9 @@ namespace trackingApi.Resources.Commands.Create
 {
     public class CreateCurrencyCommandHandler : IRequestHandler<CreateCurrencyCommand, Currency>
     {
-        private readonly IssueDbContext _dbContext;
         private readonly IUnitOfWork _unitOfWork;
-        public CreateCurrencyCommandHandler(IssueDbContext dbContext, IUnitOfWork unitOfWork)
+        public CreateCurrencyCommandHandler(IUnitOfWork unitOfWork)
         {
-            _dbContext = dbContext;
             _unitOfWork = unitOfWork;
         }
 
@@ -26,8 +24,6 @@ namespace trackingApi.Resources.Commands.Create
             var repository = _unitOfWork.GetRepository<Currency>();
             await repository.Create(currency);
             await _unitOfWork.SaveChangesAsync();
-            //_dbContext.Products.Add(product);
-            //await _dbContext.SaveChangesAsync();
 
             return currency;
         }
